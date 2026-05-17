@@ -137,6 +137,16 @@ describe.skipIf(!run)('API integration', () => {
       const res = await request(app).get(`/api/v1/redirect/${shortCode}`);
       expect(res.status).toBe(403);
     });
+
+    it('PATCH /admin/links/:shortCode/unblock restores redirect', async () => {
+      const res = await request(app)
+        .patch(`/api/v1/admin/links/${shortCode}/unblock`)
+        .set(bearer(adminToken));
+      expect(res.status).toBe(200);
+
+      const redirect = await request(app).get(`/api/v1/redirect/${shortCode}`);
+      expect(redirect.status).toBe(302);
+    });
   });
 
   describe('Rate limit / validation', () => {

@@ -38,7 +38,7 @@ npm run worker
 - `PATCH|DELETE /api/v1/links/:shortCode`
 - `GET /api/v1/links/:shortCode/stats`, `.../stats/export?format=csv`
 - `GET /api/v1/qr/:shortCode?format=png|svg`
-- `GET /api/v1/admin/links`, `PATCH /api/v1/admin/links/:shortCode/block`, `POST /api/v1/admin/links/check`
+- `GET /api/v1/admin/links`, `PATCH /api/v1/admin/links/:shortCode/block`, `PATCH .../unblock`, `POST /api/v1/admin/links/check`
 
 Кеш редиректа: `CACHE_TTL_SECONDS` (по умолчанию 300). Rate limit на создание ссылок — по IP.
 

@@ -17,6 +17,15 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        totalCount: { type: integer }
+        totalPages: { type: integer }
 paths:
   /auth/register:
     post:
@@ -140,6 +149,14 @@ paths:
       tags: [Admin]
       security: [{ bearerAuth: [] }]
       summary: Block link
+      responses:
+        '200':
+          description: OK
+  /admin/links/{shortCode}/unblock:
+    patch:
+      tags: [Admin]
+      security: [{ bearerAuth: [] }]
+      summary: Unblock link
       responses:
         '200':
           description: OK

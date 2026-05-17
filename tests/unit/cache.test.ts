@@ -7,6 +7,7 @@ vi.mock('../../src/shared/lib/redis.js', () => ({
   redis: { del, setex, get: vi.fn() },
   linkCacheKey: (code: string) => `link:${code}`,
   ipCreateKey: (ip: string) => `rate:${ip}`,
+  invalidateLinkCache: (code: string) => del(`link:${code}`),
 }));
 
 vi.mock('../../src/modules/queue/click.queue.js', () => ({

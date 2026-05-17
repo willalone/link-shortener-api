@@ -14,6 +14,7 @@ describe('OpenAPI contract', () => {
   it('documents TZ endpoints', () => {
     expect(spec.paths['/redirect/{shortCode}']?.get).toBeDefined();
     expect(spec.paths['/users/me/links']?.get).toBeDefined();
+    expect(spec.paths['/admin/links/{shortCode}/unblock']?.patch).toBeDefined();
     expect(spec.paths['/links/{shortCode}/stats']?.get).toBeDefined();
     expect(spec.paths['/qr/{shortCode}']?.get).toBeDefined();
   });

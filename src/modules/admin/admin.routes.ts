@@ -19,7 +19,7 @@ adminRouter.get(
     const limit = Number(req.query.limit) || 20;
     const search = req.query.search ? String(req.query.search) : undefined;
     const result = await admin.listAllLinks(page, limit, search);
-    res.json({ success: true, data: result });
+    res.json({ success: true, ...result });
   }),
 );
 
@@ -31,6 +31,15 @@ adminRouter.patch(
   asyncHandler(async (req: AuthRequest, res) => {
     admin.requireAdmin(req.user!.role);
     const link = await admin.blockLink(param(req, 'shortCode'), req.body.reason);
+    res.json({ success: true, data: link });
+  }),
+);
+
+adminRouter.patch(
+  '/links/:shortCode/unblock',
+  asyncHandler(async (req: AuthRequest, res) => {
+    admin.requireAdmin(req.user!.role);
+    const link = await admin.unblockLink(param(req, 'shortCode'));
     res.json({ success: true, data: link });
   }),
 );

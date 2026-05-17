@@ -20,8 +20,9 @@ describe('parsePagination', () => {
 });
 
 describe('paginatedResponse', () => {
-  it('includes totalPages in meta', () => {
+  it('includes totalCount and totalPages in meta', () => {
     const result = paginatedResponse(['a'], 5, 1, 2);
+    expect(result.meta.totalCount).toBe(5);
     expect(result.meta.totalPages).toBe(3);
   });
 });

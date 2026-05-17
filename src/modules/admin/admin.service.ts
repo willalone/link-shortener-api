@@ -1,8 +1,9 @@
 import { UserRole } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma.js';
-import { redis, linkCacheKey } from '../../shared/lib/redis.js';
+import { invalidateLinkCache } from '../../shared/lib/redis.js';
 import { AppError } from '../../shared/errors/AppError.js';
 import { logger } from '../../shared/lib/logger.js';
+import { parsePagination, paginatedResponse } from '../../shared/utils/pagination.js';
 
 export class AdminService {
   requireAdmin(role: UserRole) {
@@ -10,7 +11,7 @@ export class AdminService {
   }
 
   async listAllLinks(page = 1, limit = 20, search?: string) {
-    const skip = (page - 1) * limit;
+    const { page: p, limit: l, skip } = parsePagination({ page, limit });
     const where = search
       ? {
           OR: [
@@ -24,13 +25,13 @@ export class AdminService {
       prisma.link.findMany({
         where,
         skip,
-        take: limit,
+        take: l,
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { id: true, email: true } } },
       }),
       prisma.link.count({ where }),
     ]);
-    return { links, total, page, limit };
+    return paginatedResponse(links, total, p, l);
   }
 
   async blockLink(shortCode: string, reason: string) {
@@ -38,7 +39,7 @@ export class AdminService {
       where: { shortCode },
       data: { isActive: false, blockReason: reason },
     });
-    await redis.del(linkCacheKey(shortCode));
+    await invalidateLinkCache(shortCode);
     return link;
   }
 
@@ -47,7 +48,7 @@ export class AdminService {
       where: { shortCode },
       data: { isActive: true, blockReason: null },
     });
-    await redis.del(linkCacheKey(shortCode));
+    await invalidateLinkCache(shortCode);
     return link;
   }
 

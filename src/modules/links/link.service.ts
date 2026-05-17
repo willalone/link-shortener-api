@@ -1,7 +1,7 @@
 import { UserRole } from '@prisma/client';
 import validator from 'validator';
 import { prisma } from '../../shared/lib/prisma.js';
-import { redis, linkCacheKey, ipCreateKey } from '../../shared/lib/redis.js';
+import { redis, linkCacheKey, ipCreateKey, invalidateLinkCache } from '../../shared/lib/redis.js';
 import { loadEnv } from '../../config/env.js';
 import { AppError } from '../../shared/errors/AppError.js';
 import { generateShortCode, isValidShortCode } from '../../shared/utils/alias.js';
@@ -221,7 +221,7 @@ export class LinkService {
         maxClicks: data.maxClicks,
       },
     });
-    await redis.del(linkCacheKey(shortCode));
+    await invalidateLinkCache(shortCode);
     await this.cacheLink(updated);
     return this.formatResponse(updated);
   }
@@ -235,7 +235,7 @@ export class LinkService {
       where: { shortCode },
       data: { isActive: false },
     });
-    await redis.del(linkCacheKey(shortCode));
+    await invalidateLinkCache(shortCode);
     return { success: true, shortCode: updated.shortCode };
   }
 

@@ -9,4 +9,8 @@ export const redis = new Redis(env.REDIS_URL, {
 });
 
 export const linkCacheKey = (shortCode: string) => `link:${shortCode}`;
+
+export async function invalidateLinkCache(shortCode: string) {
+  await redis.del(linkCacheKey(shortCode));
+}
 export const ipCreateKey = (ip: string) => `ratelimit:create:${ip}`;

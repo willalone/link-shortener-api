@@ -7,16 +7,27 @@ export function parsePagination(query: PaginationParams, defaults = { page: 1, l
   const pageRaw = Number(query.page);
   const limitRaw = Number(query.limit);
   const page = Number.isFinite(pageRaw) ? Math.max(1, pageRaw) : defaults.page;
-  const limit = Number.isFinite(limitRaw)
-    ? Math.min(100, Math.max(1, limitRaw))
-    : defaults.limit;
+  const limit = Number.isFinite(limitRaw) ? Math.min(100, Math.max(1, limitRaw)) : defaults.limit;
   const skip = (page - 1) * limit;
   return { page, limit, skip };
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalCount: number;
+  totalPages: number;
+}
+
 export function paginatedResponse<T>(data: T[], total: number, page: number, limit: number) {
-  return {
-    data,
-    meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+  const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
+  const meta: PaginationMeta = {
+    page,
+    limit,
+    total,
+    totalCount: total,
+    totalPages,
   };
+  return { data, meta };
 }
