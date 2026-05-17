@@ -64,11 +64,19 @@ describe.skipIf(!run)('API integration', () => {
     });
 
     it('GET /users/me/links', async () => {
-      const res = await request(app)
-        .get('/api/v1/users/me/links')
-        .set(bearer(userToken));
+      const res = await request(app).get('/api/v1/users/me/links').set(bearer(userToken));
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBeGreaterThan(0);
+    });
+
+    it('GET /users/me/links clamps pagination', async () => {
+      const res = await request(app)
+        .get('/api/v1/users/me/links')
+        .query({ page: 0, limit: 500 })
+        .set(bearer(userToken));
+      expect(res.status).toBe(200);
+      expect(res.body.meta.page).toBe(1);
+      expect(res.body.meta.limit).toBe(100);
     });
 
     it('GET /redirect/:shortCode', async () => {
@@ -77,9 +85,7 @@ describe.skipIf(!run)('API integration', () => {
     });
 
     it('GET /links/:shortCode/stats', async () => {
-      const res = await request(app)
-        .get(`/api/v1/links/${shortCode}/stats`)
-        .set(bearer(userToken));
+      const res = await request(app).get(`/api/v1/links/${shortCode}/stats`).set(bearer(userToken));
       expect(res.status).toBe(200);
       expect(res.body.data.totalClicks).toBeGreaterThanOrEqual(1);
     });
@@ -135,9 +141,7 @@ describe.skipIf(!run)('API integration', () => {
 
   describe('Rate limit / validation', () => {
     it('POST /links invalid url', async () => {
-      const res = await request(app)
-        .post('/api/v1/links')
-        .send({ originalUrl: 'not-a-url' });
+      const res = await request(app).post('/api/v1/links').send({ originalUrl: 'not-a-url' });
       expect(res.status).toBe(400);
     });
   });

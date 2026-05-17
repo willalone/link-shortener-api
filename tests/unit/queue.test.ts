@@ -20,8 +20,6 @@ vi.mock('../../src/shared/lib/redis.js', () => ({
 describe('click queue', () => {
   it('enqueues click without blocking', async () => {
     const { enqueueClick } = await import('../../src/modules/queue/click.queue.js');
-    await expect(
-      enqueueClick({ linkId: 'link-1', ip: '127.0.0.1' }),
-    ).resolves.not.toThrow();
+    await expect(enqueueClick({ linkId: 'link-1', ip: '127.0.0.1' })).resolves.not.toThrow();
   });
 });

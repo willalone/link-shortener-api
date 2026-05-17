@@ -72,11 +72,7 @@ linksRouter.patch(
 linksRouter.delete(
   '/:shortCode',
   asyncHandler(async (req: AuthRequest, res) => {
-    const result = await links.deactivate(
-      param(req, 'shortCode'),
-      req.user!.id,
-      req.user!.role,
-    );
+    const result = await links.deactivate(param(req, 'shortCode'), req.user!.id, req.user!.role);
     res.json({ success: true, data: result });
   }),
 );
@@ -84,11 +80,7 @@ linksRouter.delete(
 linksRouter.get(
   '/:shortCode/stats',
   asyncHandler(async (req: AuthRequest, res) => {
-    const stats = await analytics.getStats(
-      param(req, 'shortCode'),
-      req.user!.id,
-      req.user!.role,
-    );
+    const stats = await analytics.getStats(param(req, 'shortCode'), req.user!.id, req.user!.role);
     res.json({ success: true, data: stats });
   }),
 );
@@ -100,11 +92,7 @@ linksRouter.get(
     if (format !== 'csv') {
       throw AppError.badRequest('Only csv export is supported');
     }
-    const csv = await analytics.exportCsv(
-      param(req, 'shortCode'),
-      req.user!.id,
-      req.user!.role,
-    );
+    const csv = await analytics.exportCsv(param(req, 'shortCode'), req.user!.id, req.user!.role);
     const shortCode = param(req, 'shortCode');
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="clicks-${shortCode}.csv"`);

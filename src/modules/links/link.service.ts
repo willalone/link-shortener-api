@@ -186,21 +186,21 @@ export class LinkService {
   }
 
   async listForUser(userId: string, page = 1, limit = 20) {
-    const skip = (page - 1) * limit;
+    const { page: p, limit: l, skip } = parsePagination({ page, limit });
     const [links, total] = await Promise.all([
       prisma.link.findMany({
         where: { userId, isActive: true },
         skip,
-        take: limit,
+        take: l,
         orderBy: { createdAt: 'desc' },
       }),
       prisma.link.count({ where: { userId, isActive: true } }),
     ]);
     return paginatedResponse(
-      links.map((l) => ({ ...this.formatResponse(l), clickCount: l.clickCount })),
+      links.map((link) => ({ ...this.formatResponse(link), clickCount: link.clickCount })),
       total,
-      page,
-      limit,
+      p,
+      l,
     );
   }
 

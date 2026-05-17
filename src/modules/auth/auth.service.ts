@@ -1,4 +1,3 @@
-import { UserRole } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma.js';
 import { AppError } from '../../shared/errors/AppError.js';
 import { comparePassword, hashPassword } from '../../shared/utils/password.js';
