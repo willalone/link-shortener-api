@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: shortener
+          POSTGRES_PASSWORD: shortener
+          POSTGRES_DB: shortener
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U shortener"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+
+    env:
+      NODE_ENV: test
+      PORT: 3001
+      APP_URL: http://localhost:3001
+      SHORT_URL_BASE: http://localhost:3001
+      DATABASE_URL: postgresql://shortener:shortener@localhost:5433/shortener?schema=public
+      REDIS_URL: redis://localhost:6380
+      JWT_SECRET: test-jwt-secret-minimum-32-characters-long
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run db:seed
+      - run: npm run db:generate
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run openapi:validate
+      - run: npm test

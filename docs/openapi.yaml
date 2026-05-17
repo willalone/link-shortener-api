@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: Link Shortener API
+  version: 1.0.0
+  description: URL shortener with analytics, Redis cache, and async click tracking
+servers:
+  - url: http://localhost:3001/api/v1
+tags:
+  - name: Auth
+  - name: Links
+  - name: Users
+  - name: Redirect
+  - name: QR
+  - name: Admin
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register
+      responses:
+        '201':
+          description: Created
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      responses:
+        '200':
+          description: OK
+  /links:
+    post:
+      tags: [Links]
+      summary: Create short link
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [originalUrl]
+              properties:
+                originalUrl: { type: string, format: uri }
+                customAlias: { type: string }
+                expiresAt: { type: string, format: date-time }
+                maxClicks: { type: integer }
+      responses:
+        '201':
+          description: Created
+  /links/{shortCode}:
+    get:
+      tags: [Links]
+      summary: Public link info
+      parameters:
+        - name: shortCode
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+    patch:
+      tags: [Links]
+      security: [{ bearerAuth: [] }]
+      summary: Update expiresAt and maxClicks
+      responses:
+        '200':
+          description: OK
+    delete:
+      tags: [Links]
+      security: [{ bearerAuth: [] }]
+      summary: Soft delete (deactivate)
+      responses:
+        '200':
+          description: OK
+  /links/{shortCode}/stats:
+    get:
+      tags: [Links]
+      security: [{ bearerAuth: [] }]
+      summary: Link analytics
+      responses:
+        '200':
+          description: OK
+  /links/{shortCode}/stats/export:
+    get:
+      tags: [Links]
+      security: [{ bearerAuth: [] }]
+      summary: Export clicks CSV
+      parameters:
+        - name: format
+          in: query
+          schema: { type: string, enum: [csv] }
+      responses:
+        '200':
+          description: CSV file
+  /users/me/links:
+    get:
+      tags: [Users]
+      security: [{ bearerAuth: [] }]
+      summary: List my links (paginated)
+      responses:
+        '200':
+          description: OK
+  /redirect/{shortCode}:
+    get:
+      tags: [Redirect]
+      summary: Redirect to original URL (302)
+      parameters:
+        - name: shortCode
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '302':
+          description: Redirect
+  /qr/{shortCode}:
+    get:
+      tags: [QR]
+      summary: QR code image
+      parameters:
+        - name: format
+          in: query
+          schema: { type: string, enum: [png, svg] }
+      responses:
+        '200':
+          description: Image
+  /admin/links:
+    get:
+      tags: [Admin]
+      security: [{ bearerAuth: [] }]
+      summary: List all links
+      responses:
+        '200':
+          description: OK
+  /admin/links/{shortCode}/block:
+    patch:
+      tags: [Admin]
+      security: [{ bearerAuth: [] }]
+      summary: Block link
+      responses:
+        '200':
+          description: OK

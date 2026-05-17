@@ -1,0 +1,58 @@
+import { UserRole } from '@prisma/client';
+import { prisma } from '../../shared/lib/prisma.js';
+import { redis, linkCacheKey } from '../../shared/lib/redis.js';
+import { AppError } from '../../shared/errors/AppError.js';
+import { logger } from '../../shared/lib/logger.js';
+
+export class AdminService {
+  requireAdmin(role: UserRole) {
+    if (role !== UserRole.ADMIN) throw AppError.forbidden('Admin access required');
+  }
+
+  async listAllLinks(page = 1, limit = 20, search?: string) {
+    const skip = (page - 1) * limit;
+    const where = search
+      ? {
+          OR: [
+            { shortCode: { contains: search, mode: 'insensitive' as const } },
+            { originalUrl: { contains: search, mode: 'insensitive' as const } },
+          ],
+        }
+      : {};
+
+    const [links, total] = await Promise.all([
+      prisma.link.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { user: { select: { id: true, email: true } } },
+      }),
+      prisma.link.count({ where }),
+    ]);
+    return { links, total, page, limit };
+  }
+
+  async blockLink(shortCode: string, reason: string) {
+    const link = await prisma.link.update({
+      where: { shortCode },
+      data: { isActive: false, blockReason: reason },
+    });
+    await redis.del(linkCacheKey(shortCode));
+    return link;
+  }
+
+  async unblockLink(shortCode: string) {
+    const link = await prisma.link.update({
+      where: { shortCode },
+      data: { isActive: true, blockReason: null },
+    });
+    await redis.del(linkCacheKey(shortCode));
+    return link;
+  }
+
+  async flagUrl(url: string, adminId: string) {
+    logger.info({ url, adminId }, 'URL flagged for review');
+    return { url, status: 'queued' as const };
+  }
+}
